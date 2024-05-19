@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "734687888770",
+    "project_id": "ebooks-57482",
+    "storage_bucket": "ebooks-57482.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:734687888770:android:10ef8cd890cf09a8d63b9b",
+        "android_client_info": {
+          "package_name": "com.ebooks"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "734687888770-ag085h23qet3sv4n8tsv0nommgdshntu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ebooks",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "734687888770-4tt1p6jmj06kf2sp5a32eokff09r0chk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDd-FIFd4F7KfIK4fdHsXskl8OQkRxt7I8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "734687888770-4tt1p6jmj06kf2sp5a32eokff09r0chk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
