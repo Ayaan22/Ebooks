@@ -30,28 +30,7 @@ const WishlistSlice = createSlice({
   },
 });
 
-// const WishlistSlice = createSlice({
-//   name: 'wishlist',
-//   initialState,
-//   reducers: {
-//     addToWishlist: (state, action) => {
-//       const newItem = action.payload;
-//       // Check if the item already exists in the wishlist
-//       const existingItem = state.wishlist.find(
-//         item => item.work.title === newItem.work.title,
-//       );
-//       if (!existingItem) {
-//         state.wishlist.push(newItem);
-//       }
-//     },
-//     removeFromWishlist: (state, action) => {
-//       const itemId = action.payload;
-//       state.wishlist = state.wishlist.filter(
-//         item => item.work.title !== itemId,
-//       );
-//     },
-//   },
-// });
+
 
 export const {addToWishlist, removeFromWishlist} = WishlistSlice.actions;
 export default WishlistSlice.reducer;
