@@ -1,10 +1,10 @@
-import {StyleSheet} from 'react-native';
-import {themeColors} from '../../utils/Themes/Colors';
+import { StyleSheet } from 'react-native';
+import { themeColors } from '../../utils/Themes/Colors';
 import {
   responsiveFontSize,
   responsiveHeight,
 } from 'react-native-responsive-dimensions';
-import {themeFonts} from '../../utils/Themes/Fonts';
+import { themeFonts } from '../../utils/Themes/Fonts';
 
 export const styles = StyleSheet.create({
   header: {
@@ -29,13 +29,13 @@ export const styles = StyleSheet.create({
     gap: 13,
   },
   heading: {
-    fontSize: responsiveFontSize(2),
+    fontSize: responsiveFontSize(2.2),
     color: themeColors.themeBlack,
     fontFamily: themeFonts.medium,
   },
   banner: {
     height: responsiveHeight(20),
     borderRadius: 10,
-    
+
   },
 });

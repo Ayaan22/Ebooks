@@ -6,13 +6,18 @@ import {
   Image,
   StatusBar,
 } from 'react-native';
-import React, {useEffect} from 'react';
+import React, { useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {responsiveScreenWidth} from 'react-native-responsive-dimensions';
+import {
+  responsiveFontSize,
+  responsiveHeight,
+  responsiveScreenWidth,
+} from 'react-native-responsive-dimensions';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {themeColors} from '../../utils/Themes/Colors';
+import { themeColors } from '../../utils/Themes/Colors';
+import { themeFonts } from '../../utils/Themes/Fonts';
 
-const Splash = ({navigation}) => {
+const Splash = ({ navigation }) => {
   useEffect(() => {
     setTimeout(() => {
       AsyncStorage.getItem('key').then(value => {
@@ -27,12 +32,12 @@ const Splash = ({navigation}) => {
   return (
     <View style={styles.container}>
       <StatusBar backgroundColor={'transparent'} hidden />
-
-      <Ionicons
+      <Image
+        resizeMode="contain"
+        source={{
+          uri: 'https://icons.veryicon.com/png/o/miscellaneous/flower-mall-color-icon/shopping-cart-114.png',
+        }}
         style={styles.logo}
-        name="book-outline"
-        size={100}
-        color={themeColors.themeWhite}
       />
     </View>
   );
@@ -46,5 +51,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  logo: {
+    height: '20%',
+    width: '35%',
   },
 });

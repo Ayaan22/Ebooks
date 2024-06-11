@@ -1,8 +1,8 @@
-import {View, Text, Image, TouchableOpacity, StatusBar} from 'react-native';
-import React, {useEffect} from 'react';
-import {styles} from './Styles';
+import { View, Text, Image, TouchableOpacity, StatusBar } from 'react-native';
+import React, { useEffect } from 'react';
+import { styles } from './Styles';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {themeColors} from '../../utils/Themes/Colors';
+import { themeColors } from '../../utils/Themes/Colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   GoogleSignin,
@@ -12,7 +12,7 @@ import AppWrapper from '../../components/AppBody/AppWrapper';
 import Snackbar from 'react-native-snackbar';
 
 
-const Welcome = ({navigation}) => {
+const Welcome = ({ navigation }) => {
   useEffect(() => {
     GoogleSignin.configure();
   }, []);
@@ -62,7 +62,7 @@ const Welcome = ({navigation}) => {
 
   return (
     <AppWrapper>
-      <View style={{padding: 20, flex: 1}}>
+      <View style={{ padding: 20, flex: 1 }}>
         <StatusBar
           backgroundColor={themeColors.themeWhite}
           barStyle="dark-content"
@@ -74,10 +74,10 @@ const Welcome = ({navigation}) => {
         <View style={styles.line} />
         <View style={styles.secContainer}>
           <View style={styles.descripContainer}>
-            <Text style={styles.title}>Only Books Can Help You</Text>
+            <Text style={styles.title}>Welcome to Groceries App</Text>
             <Text style={styles.subTitle}>
-              Books can help you to increase your knowledge and become more
-              succesfully.
+              Log in to manage your shopping list, discover new recipes, and order groceries for delivery.
+
             </Text>
           </View>
 

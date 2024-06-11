@@ -7,32 +7,33 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
-import React, {useState} from 'react';
-import {styles} from './Styles';
+import React, { useState } from 'react';
+import { styles } from './Styles';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {themeColors} from '../../utils/Themes/Colors';
+import { themeColors } from '../../utils/Themes/Colors';
 import {
   responsiveFontSize,
   responsiveHeight,
   responsiveWidth,
 } from 'react-native-responsive-dimensions';
-import {themeFonts} from '../../utils/Themes/Fonts';
-import {addToWishlist, removeFromWishlist} from '../../redux/WishlistSlice';
-import {useNavigation} from '@react-navigation/native';
-import {useDispatch, useSelector} from 'react-redux';
+import { themeFonts } from '../../utils/Themes/Fonts';
+import { addToWishlist, removeFromWishlist } from '../../redux/WishlistSlice';
+import { useNavigation } from '@react-navigation/native';
+import { useDispatch, useSelector } from 'react-redux';
 import AppWrapper from '../../components/AppBody/AppWrapper';
+import { addToCart } from '../../redux/CartSlice';
 
-const Details = ({route}) => {
-  const item = route.params.item;
-  const value = route.params.value;
-  console.log(item);
+const Details = ({ route }) => {
+  const item = route.params.main;
+
+  console.log(item, '--cat');
   return (
     <AppWrapper>
       <AppHeader />
       <ScrollView>
-        <AppBody item={item} value={value} />
+        <AppBody item={item} />
       </ScrollView>
-      <AppFooter item={item} searchValue={value} />
+      <AppFooter item={item} />
     </AppWrapper>
   );
 };
@@ -48,11 +49,11 @@ const AppHeader = () => {
   );
 };
 
-const AppBody = ({item, value}) => {
+const AppBody = ({ item, value }) => {
   const [loading, setLoading] = useState(true);
-  const coverId = value ? item.cover_i : item?.work.cover_id;
+  console.log(item, '-->');
   return (
-    <View style={{flex: 1}}>
+    <View style={{ flex: 1 }}>
       <StatusBar backgroundColor={themeColors.themeBlue} />
       <View
         style={{
@@ -78,17 +79,10 @@ const AppBody = ({item, value}) => {
         )}
         <Image
           resizeMode="contain"
-          style={{
-            height: responsiveHeight(20),
-            width: responsiveWidth(30),
-          }}
-          source={{
-            uri: coverId
-              ? `https://covers.openlibrary.org/b/id/${coverId}-L.jpg`
-              : 'https://via.placeholder.com/110',
-          }}
-          onLoad={() => setLoading(false)} // Hide loader when image is loaded
-          onError={() => setLoading(false)} // Hide loader if there is an error loading the image
+          style={{ height: responsiveHeight(20), width: responsiveWidth(100) }}
+          source={{ uri: item.img }}
+          onLoad={() => setLoading(false)}
+          onError={() => setLoading(false)}
         />
       </View>
       <View
@@ -102,31 +96,38 @@ const AppBody = ({item, value}) => {
           justifyContent: 'center',
           paddingHorizontal: 20,
         }}>
-        <Text
-          style={[
-            styles.title,
-            {
-              fontSize: responsiveFontSize(1.4),
-              fontFamily: themeFonts.regular,
-            },
-          ]}>
-          Author
-        </Text>
-        <Text
-          numberOfLines={2}
-          ellipsizeMode="tail"
-          style={[
-            styles.title,
-            {
-              fontSize: responsiveFontSize(1.7),
-              fontFamily: themeFonts.semiBold,
-              opacity: 0.6,
-            },
-          ]}>
-          {value
-            ? item?.author_name.join(', ')
-            : item?.work?.author_names.join(', ')}
-        </Text>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+          <Text
+            style={[
+              styles.title,
+              { fontSize: responsiveFontSize(2), fontFamily: themeFonts.regular },
+            ]}>
+            {item.name
+              ? item.name.charAt(0).toUpperCase() + item.name.slice(1)
+              : 'Loading...'}
+          </Text>
+          <Text
+            numberOfLines={2}
+            ellipsizeMode="tail"
+            style={[
+              styles.title,
+              {
+                fontSize: responsiveFontSize(2.3),
+                fontFamily: themeFonts.semiBold,
+                color: themeColors.themeBlue,
+                top: 5,
+              },
+            ]}>
+            {' '}
+            ₹ {item.price}
+          </Text>
+        </View>
+
         <Text
           numberOfLines={2}
           ellipsizeMode="tail"
@@ -134,59 +135,60 @@ const AppBody = ({item, value}) => {
             styles.title,
             {
               fontSize: responsiveFontSize(1.5),
-              fontFamily: themeFonts.regular,
-              opacity: 0.6,
+              fontFamily: themeFonts.semiBold,
+              opacity: 0.5,
             },
           ]}>
-          Best seller of The New York Times
+          {item.pieces} pieces
         </Text>
       </View>
 
-      <View
-        style={{
-          paddingHorizontal: 20,
-          gap: 5,
-          flex: 1,
-          top: -20,
-        }}>
-        <Text style={styles.heading}>About The Book</Text>
+      <View style={{ paddingHorizontal: 20, gap: 5, flex: 1, top: -20 }}>
+        <Text style={styles.heading}>About The Product</Text>
         <Text
           style={[
             styles.title,
             {
-              fontSize: responsiveFontSize(1.6),
+              fontSize: responsiveFontSize(1.5),
               fontFamily: themeFonts.regular,
               opacity: 0.6,
               lineHeight: 25,
+              textAlign: 'justify'
             },
           ]}>
-          {item?.subject_facet?.join(', ') || 'No description available.'}
+          Fruits and vegetables offer a plethora of health benefits, making them
+          essential components of a balanced diet. Packed with essential
+          vitamins, minerals, and antioxidants, these nutritious foods
+          contribute to overall well-being and help prevent chronic diseases.
+          Their high fiber content aids digestion and promotes a healthy gut
+          microbiome, while their low calorie and fat content make them ideal
+          for weight management.
         </Text>
       </View>
     </View>
   );
 };
 
-const AppFooter = ({item}) => {
+const AppFooter = ({ item }) => {
   const dispatch = useDispatch();
-  const wishlist = useSelector(state => state.wishlist.wishlist);
+  const cartData = useSelector(state => state.cart);
 
-  const getTitle = item => item?.title || item?.work?.title;
 
-  const isBookInWishlist = wishlist.some(
-    value => getTitle(value) === getTitle(item),
+
+  const isProductInCart = cartData.some(
+    value => item.name == value.name
   );
 
   const navigation = useNavigation();
   const handleNavigation = () => {
-    if (isBookInWishlist) {
-      navigation.navigate('Wishlist');
+    if (isProductInCart) {
+      navigation.navigate('Cart');
     } else {
-      dispatch(addToWishlist(item));
+      dispatch(addToCart(item));
     }
   };
   return (
-    <View style={{padding: 10}}>
+    <View style={{ padding: 10 }}>
       <TouchableOpacity
         onPress={handleNavigation}
         style={{
@@ -205,7 +207,7 @@ const AppFooter = ({item}) => {
               color: themeColors.themeWhite,
             },
           ]}>
-          {isBookInWishlist ? 'Go To Wishlist' : 'Add To Wishlist'}
+          {isProductInCart ? 'Go To Cart' : 'Add To Cart'}
         </Text>
       </TouchableOpacity>
     </View>

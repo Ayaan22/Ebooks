@@ -11,31 +11,31 @@ import {
   Appearance,
   ActivityIndicator,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
-import {styles} from './Styles';
+import React, { useEffect, useState } from 'react';
+import { styles } from './Styles';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import {themeColors} from '../../utils/Themes/Colors';
+import { themeColors } from '../../utils/Themes/Colors';
 import {
   responsiveFontSize,
   responsiveHeight,
   responsiveWidth,
 } from 'react-native-responsive-dimensions';
-import {themeFonts} from '../../utils/Themes/Fonts';
-import {addToWishlist, removeFromWishlist} from '../../redux/WishlistSlice';
-import {useDispatch, useSelector} from 'react-redux';
-import Wishlist from '../Wishlist/Wishlist';
+import { themeFonts } from '../../utils/Themes/Fonts';
+import Feather from 'react-native-vector-icons/Feather';
+import { useDispatch, useSelector } from 'react-redux';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {useNavigation} from '@react-navigation/native';
-import AntDesign from 'react-native-vector-icons/AntDesign';
-import {getCurrentBooksApi, getRecommendBooksApi} from '../../apis/Apis';
+import { useNavigation } from '@react-navigation/native';
 import AppWrapper from '../../components/AppBody/AppWrapper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import ProductsCarousel from '../../components/ProductsCarousel';
+import { fruits, vegetables } from '../../utils/MockData/Data';
+import { fetchData } from '../../apis/Apis';
 
 const Home = () => {
-  const [currReadingBooks, setCurrReadingBooks] = useState([]);
-  const [recommendBooks, setRecommendBooks] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [productsData, setproductsData] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [userName, setUserName] = useState('Reader');
+  console.log(productsData)
 
   const fetchUserName = async () => {
     try {
@@ -49,41 +49,35 @@ const Home = () => {
     }
   };
 
-  console.log(userName, '-->');
-
   useEffect(() => {
-    const fetchBooksData = async () => {
-      try {
-        const [currentBooksResponse, recommendBooksResponse] =
-          await Promise.all([getCurrentBooksApi(), getRecommendBooksApi()]);
-
-        if (currentBooksResponse.status === 200) {
-          setCurrReadingBooks(currentBooksResponse.data.reading_log_entries);
-        } else {
-          Alert.alert('Error', 'Failed to fetch current reading books.');
-        }
-        if (recommendBooksResponse.status === 200) {
-          setRecommendBooks(recommendBooksResponse.data.reading_log_entries);
-        } else {
-          Alert.alert('Error', 'Failed to fetch recommended books.');
-        }
-      } catch (error) {
-        Alert.alert('Error', 'An error occurred while fetching books data.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchBooksData();
-    fetchUserName();
+    fetchDataAndUserName();
   }, []);
 
-  const wishlist = useSelector(state => state.wishlist.wishlist);
+  const fetchDataAndUserName = async () => {
+    try {
+      await fetchUserName();
+      const { data, status } = await fetchData();
+      if (status == 200) {
+        setproductsData(data?.products);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const cartData = useSelector(state => state.cart);
 
   return (
     <AppWrapper>
-      <ScrollView showsVerticalScrollIndicator={false} style={{padding: 20}}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        style={{ padding: 20, marginBottom: 20 }}
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingBottom: cartData.length > 0 && !isLoading ? 100 : 20,
+        }}>
         <AppHeader name={userName} />
+
         {isLoading ? (
           <View
             style={{
@@ -95,16 +89,16 @@ const Home = () => {
             <ActivityIndicator size="large" color={themeColors.themeBlue} />
           </View>
         ) : (
-          <AppBody recommendData={recommendBooks} data={currReadingBooks} />
+          <AppBody data={productsData} />
         )}
       </ScrollView>
 
-      <Footer data={wishlist} isLoading={isLoading} />
+      <Footer data={cartData} isLoading={isLoading} />
     </AppWrapper>
   );
 };
 
-const AppHeader = ({name}) => {
+const AppHeader = ({ name }) => {
   const navigation = useNavigation();
   return (
     <View style={styles.header}>
@@ -114,12 +108,12 @@ const AppHeader = ({name}) => {
       </View>
       <TouchableOpacity
         onPress={() => {
-          navigation.navigate('Wishlist');
+          navigation.navigate('Cart');
         }}>
-        <MaterialIcons
-          name="favorite-border"
+        <Feather
+          name="shopping-bag"
           size={27}
-          style={{top: -2}}
+          style={{ top: -2, opacity: 0.6 }}
           color={themeColors.themeBlack}
         />
       </TouchableOpacity>
@@ -127,225 +121,37 @@ const AppHeader = ({name}) => {
   );
 };
 
-const AppBody = ({data, recommendData}) => {
-  const filteredData = data.filter(item => item.work.title != null);
-  const filteredRecomData = recommendData.filter(
-    item => item.work.title != null,
-  );
-  const navigation = useNavigation();
-  const dispatch = useDispatch();
-  const wishlist = useSelector(state => state.wishlist.wishlist);
-  const HeaderTitles = ({title}) => {
+const AppBody = ({ data }) => {
+  const HeaderTitles = ({ title }) => {
     return (
-      <View style={{marginVertical: 10}}>
+      <View style={{ marginVertical: 10 }}>
         <Text style={styles.heading}>{title}</Text>
-        <View style={[styles.divider, {width: '15%'}]}></View>
+        <View style={[styles.divider, { width: '15%' }]}></View>
       </View>
     );
   };
-  const handleAddToWishlist = book => () => {
-    dispatch(addToWishlist(book));
-  };
 
-  const handleRemoveFromWishlist = book => () => {
-    dispatch(removeFromWishlist(book.work.title));
-  };
-  const booksView = ({item, index}) => {
-    return (
-      <TouchableOpacity
-        onPress={() => {
-          navigation.navigate('Details', {item: item});
-        }}
-        activeOpacity={0.7}>
-        <Image
-          resizeMode="cover"
-          style={{
-            height: responsiveHeight(18),
-            width: responsiveWidth(30),
-            borderRadius: 0,
-          }}
-          source={{
-            uri: item.work.cover_id
-              ? `https://covers.openlibrary.org/b/id/${item.work.cover_id}-L.jpg`
-              : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQAllPFjGNTDIw12Rr426PsDF1ZjIqveIBcUKS5Mh_uAQ&s',
-          }}
-        />
-      </TouchableOpacity>
-    );
-  };
-
-  const booksVerticalView = ({item, index}) => {
-    const getTitle = item => item?.title || item?.work?.title;
-
-    const isBookInWishlist = wishlist.some(
-      value => getTitle(value) === getTitle(item),
-    );
-    return (
-      <TouchableOpacity
-        activeOpacity={0.7}
-        onPress={() => {
-          navigation.navigate('Details', {item: item});
-        }}
-        style={{
-          flex: 1,
-          flexDirection: 'row',
-          backgroundColor: '#F3F3F3',
-          borderRadius: 10,
-          elevation: 1,
-          gap: 10,
-        }}>
-        <View
-          style={{flex: 0.3, backgroundColor: '#F3F3F3', paddingVertical: 10}}>
-          <Image
-            resizeMode="contain"
-            style={{
-              aspectRatio: 1,
-            }}
-            source={{
-              uri: item.work.cover_id
-                ? `https://covers.openlibrary.org/b/id/${item.work.cover_id}-L.jpg`
-                : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQAllPFjGNTDIw12Rr426PsDF1ZjIqveIBcUKS5Mh_uAQ&s',
-            }}
-          />
-        </View>
-
-        {/* </View> */}
-        <View style={{flex: 0.7, justifyContent: 'center'}}>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}>
-            <Text
-              numberOfLines={2}
-              ellipsizeMode="tail"
-              style={[
-                styles.title,
-                {fontSize: responsiveFontSize(2), flex: 0.8},
-              ]}>
-              {item.work.title}
-            </Text>
-            {isBookInWishlist ? (
-              <TouchableOpacity onPress={handleRemoveFromWishlist(item)}>
-                <MaterialIcons
-                  name="favorite"
-                  size={23}
-                  style={{right: 10}}
-                  color={themeColors.themeBlue}
-                />
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity onPress={handleAddToWishlist(item)}>
-                <MaterialIcons
-                  name="favorite-border"
-                  size={23}
-                  style={{right: 10}}
-                  color={themeColors.themeBlack}
-                />
-              </TouchableOpacity>
-            )}
-          </View>
-
-          <Text
-            numberOfLines={2}
-            ellipsizeMode="tail"
-            style={[
-              styles.title,
-
-              {
-                fontSize: responsiveFontSize(1.5),
-                fontFamily: themeFonts.regular,
-                width: '80%',
-              },
-            ]}>
-            {item.work.author_names.join(', ')}
-          </Text>
-          <View style={{flexDirection: 'row', alignItems: 'center', gap: 5}}>
-            <Text
-              style={[
-                styles.title,
-                {
-                  fontSize: responsiveFontSize(1.4),
-                  fontFamily: themeFonts.regular,
-                  color: themeColors.themeBlue,
-                },
-              ]}>
-              Published on
-            </Text>
-            <Text
-              style={[
-                styles.title,
-                {
-                  fontSize: responsiveFontSize(1.4),
-                  fontFamily: themeFonts.regular,
-                },
-              ]}>
-              {item.work.first_publish_year}
-            </Text>
-          </View>
-        </View>
-      </TouchableOpacity>
-    );
-  };
   return (
     <View style={styles.container}>
-      <StatusBar
-        backgroundColor={themeColors.themeBlack}
-        barStyle={'light-content'}
-      />
-      <TouchableOpacity
-        onPress={() => {
-          navigation.navigate('Search');
-        }}
-        activeOpacity={0.8}
-        style={{
-          height: responsiveHeight(6),
-          borderRadius: 10,
-          borderColor: 'grey',
-          borderWidth: 1,
-          marginTop: 10,
-          flexDirection: 'row',
-          alignItems: 'center',
-          paddingHorizontal: 10,
-          gap: 7,
-          marginVertical: 10,
-        }}>
-        <AntDesign name="search1" size={20} color={'grey'} />
-        <Text style={{fontSize: 15}}>Search here..</Text>
-      </TouchableOpacity>
       <Image
         style={styles.banner}
         resizeMode="cover"
         source={{
-          uri: 'https://www.thehowe.org/wp-content/uploads/2023/02/Book-Banner.jpg',
+          uri: 'https://thumbs.dreamstime.com/b/delivery-grocery-shopping-healthy-food-background-vegan-vegetarian-paper-bag-vegetables-fruits-nuts-grains-green-copy-178150218.jpg',
         }}
       />
-      <HeaderTitles title={'Recommended for you'} />
-      <FlatList
-        showsHorizontalScrollIndicator={false}
-        horizontal
-        data={filteredData}
-        renderItem={booksView}
-        ItemSeparatorComponent={() => <View style={{width: 20}}></View>}
-      />
-      <HeaderTitles title={'Popular Books for you'} />
-      <FlatList
-        scrollEnabled={false}
-        showsVerticalScrollIndicator={false}
-        data={filteredRecomData}
-        renderItem={booksVerticalView}
-        ItemSeparatorComponent={() => <View style={{height: 20}}></View>}
-        ListFooterComponent={() => <View style={{height: 120}}></View>}
-      />
+      <HeaderTitles title={'Seasonal Fruits'} />
+      <ProductsCarousel data={fruits} />
+      <HeaderTitles title={'Best Sellings'} />
+      <ProductsCarousel data={vegetables} />
     </View>
   );
 };
 
-const Footer = ({data, isLoading}) => {
+const Footer = ({ data, isLoading }) => {
   const navigation = useNavigation();
   const handleNavigation = () => {
-    navigation.navigate('Wishlist');
+    navigation.navigate('Cart');
   };
   return (
     <View
@@ -361,7 +167,7 @@ const Footer = ({data, isLoading}) => {
           onPress={handleNavigation}
           activeOpacity={0.8}
           style={{
-            backgroundColor: themeColors.themeBlack,
+            backgroundColor: themeColors.themeBlue,
             padding: 20,
             borderRadius: 10,
             flexDirection: 'row',
@@ -377,8 +183,8 @@ const Footer = ({data, isLoading}) => {
               },
             ]}>
             {data.length === 1
-              ? `${data.length} Book in Wishlist`
-              : `${data.length} Books in Wishlist`}
+              ? `${data.length} Product in Cart`
+              : `${data.length} Products in Cart`}
           </Text>
           <View>
             <Ionicons
